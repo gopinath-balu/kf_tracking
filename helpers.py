@@ -128,7 +128,7 @@ def draw_box_label(id,img, bbox_cv2, box_color=(0, 155, 255), show_label=True):
         cv2.rectangle(img, (left-2, top-20), (right+2, top), box_color, -1, 1)
         
         # Output the labels that show the x and y coordinates of the bounding box center.
-        text_x= 'id='+str(id)
+        text_x= str(id)
         cv2.putText(img,text_x,(left,top), font, font_size, font_color, 1, cv2.LINE_AA)
         # text_y= 'y='+str((top+bottom)/2)
         # cv2.putText(img,text_y,(left,top-5), font, font_size, font_color, 1, cv2.LINE_AA)
