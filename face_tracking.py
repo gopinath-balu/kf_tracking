@@ -125,7 +125,8 @@ def pipeline(img):
          print('unmatched_det:', unmatched_dets)
          print('unmatched_trks:', unmatched_trks)
     
-    print('matched, unmatched_dets, unmatched_trks', matched, unmatched_dets, unmatched_trks)
+    #print('matched, unmatched_dets, unmatched_trks', matched, unmatched_dets, unmatched_trks)
+    print('matched, ', matched)
          
     # Deal with matched detections     
     if matched.size > 0:
