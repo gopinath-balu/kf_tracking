@@ -22,7 +22,7 @@ frame_count = 0 # frame counter
 max_age = 15  # no.of consecutive unmatched detection before 
              # a track is deleted
 
-min_hits =1  # no. of consecutive matches needed to establish a track
+min_hits = 7  # no. of consecutive matches needed to establish a track
 
 tracker_list =[] # list for trackers
 # list for track ID
@@ -36,21 +36,21 @@ def assign_detections_to_trackers(trackers, detections, iou_thrd = 0.3):
     unmatchted trackers, unmatched detections.
     '''    
     
-    IOU_mat= np.zeros((len(trackers),len(detections)),dtype=np.float32)
-    # print('IOU_mat {} , trackers {} , detections {}'.format(IOU_mat, len(trackers), len(detections)))
+    IOU_mat= np.zeros((len(trackers), len(detections)), dtype=np.float32)
+    print('IOU_mat {} , trackers {} , detections {}'.format(IOU_mat, len(trackers), len(detections)))
     for t,trk in enumerate(trackers):
-        #trk = convert_to_cv2bbox(trk) 
         for d,det in enumerate(detections):
-         #   det = convert_to_cv2bbox(det)
             IOU_mat[t,d] = helpers.box_iou2(trk,det) 
     
     # Produces matches       
     # Solve the maximizing the sum of IOU assignment problem using the
     # Hungarian algorithm (also known as Munkres algorithm)
     
-    matched_idx = linear_assignment(-IOU_mat)        
+    matched_idx = linear_assignment(-IOU_mat)
+    print('original {}, shape of orig {} '.format(linear_assignment(-IOU_mat), linear_assignment(-IOU_mat).shape))        
 
     unmatched_trackers, unmatched_detections = [], []
+    
     for t,trk in enumerate(trackers):
         if(t not in matched_idx[:,0]):
             unmatched_trackers.append(t)
@@ -66,7 +66,7 @@ def assign_detections_to_trackers(trackers, detections, iou_thrd = 0.3):
     # an untracked object
     
     for m in matched_idx:
-        if(IOU_mat[m[0],m[1]]<iou_thrd):
+        if(IOU_mat[m[0],m[1]] < iou_thrd):
             unmatched_trackers.append(m[0])
             unmatched_detections.append(m[1])
         else:
@@ -94,29 +94,28 @@ def pipeline(img):
     
     frame_count+=1
     
-    # print('Frame count {}, tracker_list {}, max_age {}, track_id_list {}, debug {}\
-    #     '.format(frame_count,tracker_list,max_age,track_id_list,debug))
-
+    
     img_dim = (img.shape[1], img.shape[0])
     z_box = det.get_localization(img) # measurement
-    # z_box = det.detect_faces(img) # measurement
-    # z_box = [np.array(value['box']) for value in z_box]
-    print('z_box ', z_box)
+    
     if debug:
        print('Frame:', frame_count)
 
     x_box =[]
+
     if debug: 
         for i in range(len(z_box)):
            img1= helpers.draw_box_label(img, z_box[i], box_color=(255, 0, 0))
            plt.imshow(img1)
         plt.show()
     
+    print('len(tracker_list), tracker_list ', len(tracker_list), tracker_list)
+
     if len(tracker_list) > 0:
         for trk in tracker_list:
             x_box.append(trk.box)
     
-    
+    print('x_box, z_box ', x_box, z_box)
     matched, unmatched_dets, unmatched_trks \
     = assign_detections_to_trackers(x_box, z_box, iou_thrd = 0.3)  
     if debug:
@@ -126,9 +125,10 @@ def pipeline(img):
          print('unmatched_det:', unmatched_dets)
          print('unmatched_trks:', unmatched_trks)
     
+    print('matched, unmatched_dets, unmatched_trks', matched, unmatched_dets, unmatched_trks)
          
     # Deal with matched detections     
-    if matched.size >0:
+    if matched.size > 0:
         for trk_idx, det_idx in matched:
             z = z_box[det_idx]
             z = np.expand_dims(z, axis=0).T
@@ -219,14 +219,15 @@ if __name__ == "__main__":
         # clip = clip1.fl_image(pipeline)
         # clip.write_videofile(output, audio=False)
         # end  = time.time()
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture("http://root:axis0235@10.0.4.200/mjpg/1/video.mjpg")
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         out = cv2.VideoWriter('output.avi',fourcc, 8.0, (640,480))
 
         while(True):
             
             ret, img = cap.read()
-            #print(img)
+            img = cv2.resize(img, (640, 480))
+            # print(img, type(img))
             
             np.asarray(img)
             new_img = pipeline(img)
