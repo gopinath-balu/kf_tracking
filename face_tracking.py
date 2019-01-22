@@ -6,7 +6,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
-#from moviepy.editor import VideoFileClip
+import os
+from moviepy.editor import VideoFileClip
 from collections import deque
 from sklearn.utils.linear_assignment_ import linear_assignment
 
@@ -19,14 +20,16 @@ import cv2
 # Global variables to be used by funcitons of VideoFileClop
 frame_count = 0 # frame counter
 
-max_age = 15  # no.of consecutive unmatched detection before 
+max_age = 3  # no.of consecutive unmatched detection before 
              # a track is deleted
 
-min_hits = 7  # no. of consecutive matches needed to establish a track
+min_hits = 3  # no. of consecutive matches needed to establish a track
 
 tracker_list =[] # list for trackers
 # list for track ID
-track_id_list= deque([str(i) for i in range(1, 16)])
+track_id_list= deque([str(i) for i in range(1, 1000000)])
+
+out_folder = '/home/gopi34/Workspace/mtcnn_tracking/kf_tracking/people_folder'
 
 debug = False
 
@@ -127,11 +130,13 @@ def pipeline(img):
     
     #print('matched, unmatched_dets, unmatched_trks', matched, unmatched_dets, unmatched_trks)
     print('matched, ', matched)
-         
+
     # Deal with matched detections     
     if matched.size > 0:
         for trk_idx, det_idx in matched:
             z = z_box[det_idx]
+            # print('z box here is ---------- {}, track id ------------- {}, detection is ---------- {}'\
+            #     .format(z, trk.id, det_idx))
             z = np.expand_dims(z, axis=0).T
             tmp_trk= tracker_list[trk_idx]
             tmp_trk.kalman_filter(z)
@@ -142,7 +147,7 @@ def pipeline(img):
             tmp_trk.hits += 1
     
     # Deal with unmatched detections      
-    if len(unmatched_dets)>0:
+    if len(unmatched_dets) > 0:
         for idx in unmatched_dets:
             z = z_box[idx]
             z = np.expand_dims(z, axis=0).T
@@ -160,7 +165,7 @@ def pipeline(img):
             x_box.append(xx)
     
     # Deal with unmatched tracks       
-    if len(unmatched_trks)>0:
+    if len(unmatched_trks) > 0:
         for trk_idx in unmatched_trks:
             tmp_trk = tracker_list[trk_idx]
             tmp_trk.no_losses += 1
@@ -173,15 +178,16 @@ def pipeline(img):
                    
        
     # The list of tracks to be annotated  
-    good_tracker_list =[]
+    good_tracker_list = []
     for trk in tracker_list:
         if ((trk.hits >= min_hits) and (trk.no_losses <=max_age)):
              good_tracker_list.append(trk)
              x_cv2 = trk.box
+             # print('trk.id            ', trk.id)
              if debug:
                  print('updated box: ', x_cv2)
                  print()
-             img= helpers.draw_box_label(trk.id,img, x_cv2) # Draw the bounding boxes on the 
+             img= helpers.draw_box_label(trk.id, img, x_cv2) # Draw the bounding boxes on the 
                                              # images
     # Book keeping
     deleted_tracks = filter(lambda x: x.no_losses > max_age, tracker_list)  
@@ -215,12 +221,15 @@ if __name__ == "__main__":
     else: # test on a video file.
         
         # start=time.time()
-        # output = 'test_v7.mp4'
+        # # output = 'test_v7.mp4'
         # clip1 = VideoFileClip("project_video.mp4")#.subclip(4,49) # The first 8 seconds doesn't have any cars...
         # clip = clip1.fl_image(pipeline)
         # clip.write_videofile(output, audio=False)
         # end  = time.time()
-        cap = cv2.VideoCapture("http://root:axis0235@10.0.4.200/mjpg/1/video.mjpg")
+        # cap = cv2.VideoCapture("http://root:axis0235@10.0.4.200/mjpg/1/video.mjpg")
+        cap = cv2.VideoCapture(0)
+
+        # cap = cv2.VideoCapture('test_file.mp4')
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         out = cv2.VideoWriter('output.avi',fourcc, 8.0, (640,480))
 
