@@ -17,6 +17,7 @@ import detector
 from mtcnn.mtcnn import MTCNN
 import tracker
 import cv2
+import copy
 
 # Global variables to be used by funcitons of VideoFileClop
 frame_count = 0 # frame counter
@@ -198,6 +199,7 @@ def pipeline(img):
             if debug:
                 print('updated box: ', x_cv2)
                 print()
+            img_to_write = copy.deepcopy(img)
             img = helpers.draw_box_label(trk.id, img, x_cv2) # Draw the bounding boxes on the images
             
             # write_img = img[x_cv2[0]:x_cv2[2], x_cv2[1]:x_cv2[3]]
@@ -209,13 +211,13 @@ def pipeline(img):
         # print('trk.id, trk.box, trk.det_conf  ------ > ', trk.id, trk.box, trk.det_conf)
         
         if (trk.id not in tracker_data.keys()):
-            tracker_data[trk.id] = [conf, x_cv2, img]
+            tracker_data[trk.id] = [conf, x_cv2, img_to_write]
             print('not in tracker_data add new data')
 
         if (trk.id in tracker_data.keys()):
             print('data in tracker_data but conf low so no change')
             if (trk.det_conf > tracker_data[trk.id][0]):
-                tracker_data[trk.id] = [conf, x_cv2, img]
+                tracker_data[trk.id] = [conf, x_cv2, img_to_write]
                 print(' changed tracker_data')
 
 
