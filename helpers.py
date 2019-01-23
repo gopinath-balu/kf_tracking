@@ -109,7 +109,7 @@ def convert_to_cv2bbox(bbox, img_dim = (1280, 720)):
     return (left, top, right, bottom)
     
     
-def draw_box_label(id,img, bbox_cv2, box_color=(0, 155, 255), show_label=True):
+def draw_box_label(id, img, bbox_cv2, box_color=(0, 155, 255), show_label=True):
     '''
     Helper funciton for drawing the bounding boxes and the labels
     bbox_cv2 = [left, top, right, bottom]

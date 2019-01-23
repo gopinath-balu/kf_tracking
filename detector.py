@@ -131,13 +131,13 @@ class PersonDetector(object):
                       ratio = box_h/(box_w + 0.01)
                       
                       #if ((ratio < 0.8) and (box_h>20) and (box_w>20)):
-                      tmp_car_boxes.append(box)
+                      tmp_car_boxes.append((box, scores[idx]))
                       # print('confidence: ', scores[idx])
                       # print(box, ', confidence: ', scores[idx], 'ratio:', ratio)
                       '''   
                       else:
                           print('wrong ratio or wrong size, ', box, ', confidence: ', scores[idx], 'ratio:', ratio)
-                      '''    
+                      # '''    
                           
                   
                   self.car_boxes = tmp_car_boxes

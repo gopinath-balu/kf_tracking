@@ -14,6 +14,7 @@ class Tracker(): # class for Kalman Filter based tracker
         self.box = [] # list to store the coordinates for a bounding box 
         self.hits = 0 # number of detection matches
         self.no_losses = 0 # number of unmatched tracks (track loss)
+        self.det_conf = 0 # detection conf
         
         # Initialize parameters for Kalman Filtering
         # The state is the (x, y) coordinates of the detection box
